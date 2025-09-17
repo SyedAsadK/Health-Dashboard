@@ -1,6 +1,6 @@
 use actix_cors::Cors; // Import Cors
 use actix_files as fs;
-use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get};
 use rand::Rng;
 use serde::Serialize;
 

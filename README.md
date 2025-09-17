@@ -6,6 +6,8 @@ HealNet is a full-stack web application designed to serve as a real-time health 
 
 The application features a responsive and modern user interface built with **React** and **Tailwind CSS**, powered by a high-performance **Rust** backend using the **Actix web** framework.
 
+![Prototype Showcase](./ss.png)
+
 ## Tech Stack
 
 The project is divided into two main parts: a frontend client and a backend server.
