@@ -131,7 +131,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors) // Add CORS middleware
             .service(get_dashboard_data)
-            .service(fs::Files::new("/", "./static").index_file("index.html"))
+            .service(fs::Files::new("/", "../client/dist/").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?
     .run()

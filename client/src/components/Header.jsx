@@ -9,7 +9,7 @@ const Header = () => {
           Outbreak Analytics
         </h1>
         <p className="text-sm text-gray-400">
-          Bhubaneswar, Odisha | Wednesday, 2:09 PM
+          Bhubaneswar, Odisha | Wednesday, 2:34 PM
         </p>
       </div>
       <div className="flex items-center gap-4">
