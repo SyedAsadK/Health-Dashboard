@@ -27,7 +27,10 @@ function App() {
         setError(err.message);
         console.error("Failed to fetch data:", err);
       } finally {
-        setLoading(false);
+        // Simulate a network delay for a better UX
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
       }
     };
 

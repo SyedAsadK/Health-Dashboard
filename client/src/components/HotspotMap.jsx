@@ -5,10 +5,19 @@ import "leaflet/dist/leaflet.css";
 const HotspotMap = ({ hotspots }) => {
   const mapCenter = [20.2961, 85.8245]; // Bhubaneswar coordinates
 
-  const getRiskColor = (risk) => {
-    if (risk > 0.8) return "#E74C3C"; // Red
-    if (risk > 0.5) return "#FFC300"; // Yellow
-    return "#00A896"; // Green
+  const getDiseaseColor = (disease) => {
+    switch (disease) {
+      case "Cholera":
+        return "#E74C3C"; // Red
+      case "Typhoid":
+        return "#FFC300"; // Yellow
+      case "Hepatitis A":
+        return "#3498DB"; // Blue
+      case "Diarrhea":
+        return "#2ECC71"; // Green
+      default:
+        return "#95A5A6"; // Grey for unknown
+    }
   };
 
   return (
@@ -27,9 +36,9 @@ const HotspotMap = ({ hotspots }) => {
             center={[hotspot.lat, hotspot.lon]} // Use lat and lon from the API
             radius={5 + hotspot.cases / 5}
             pathOptions={{
-              color: getRiskColor(hotspot.risk),
-              fillColor: getRiskColor(hotspot.risk),
-              fillOpacity: 0.6,
+              color: getDiseaseColor(hotspot.disease),
+              fillColor: getDiseaseColor(hotspot.disease),
+              fillOpacity: 0.7,
             }}
           >
             <Popup>

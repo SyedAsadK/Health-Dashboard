@@ -45,6 +45,11 @@ fn generate_map_data(num_hotspots: i32) -> Vec<MapHotspot> {
         "Riverside Town",
         "Hilltop Village",
         "Dhalpur",
+        "Chandrasekharpur",
+        "Patia",
+        "Saheed Nagar",
+        "Rasulgarh",
+        "Nayapalli",
     ];
     let diseases = ["Cholera", "Typhoid", "Hepatitis A", "Diarrhea"];
     let mut rng = rand::thread_rng();
@@ -54,12 +59,12 @@ fn generate_map_data(num_hotspots: i32) -> Vec<MapHotspot> {
     for i in 0..num_hotspots {
         hotspots.push(MapHotspot {
             id: i,
-            location: locations[rng.gen_range(0..locations.len())].to_string(),
-            disease: diseases[rng.gen_range(0..diseases.len())].to_string(),
+            location: locations[i as usize % locations.len()].to_string(),
+            disease: diseases[i as usize % diseases.len()].to_string(), // Cycle through diseases
             risk: rng.r#gen(),
-            cases: rng.gen_range(1..=50),
-            lat: bhubaneswar_lat + (rng.r#gen::<f64>() - 0.5) * 0.15,
-            lon: bhubaneswar_lon + (rng.r#gen::<f64>() - 0.5) * 0.15,
+            cases: rng.gen_range(5..=70), // Slightly adjusted case range
+            lat: bhubaneswar_lat + (rng.r#gen::<f64>() - 0.5) * 0.25, // Wider spread
+            lon: bhubaneswar_lon + (rng.r#gen::<f64>() - 0.5) * 0.25,
         });
     }
     hotspots
@@ -131,7 +136,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors) // Add CORS middleware
             .service(get_dashboard_data)
-            .service(fs::Files::new("/", "../client/dist/").index_file("index.html"))
+            .service(fs::Files::new("/", "../client/dist").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
