@@ -1,0 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap");
+
+/* Import Tailwind CSS base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-bg: #0d1b2a;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --primary-color: #00f2e5;
+  --accent-color: #ffc300;
+}
+
+body {
+  background-color: var(--primary-bg);
+  color: #e0e0e0;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar for a more modern look */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 10px;
+  border: 2px solid var(--primary-bg);
+}
+
+/* Leaflet map container fix */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  border-radius: 1rem;
+  background-color: #1a2a3a;
+  /* Dark background for map tiles */
+}
