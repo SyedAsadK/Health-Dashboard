@@ -12,7 +12,7 @@ const HotspotMap = ({ hotspots }) => {
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg h-80">
+    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg h-[30rem]">
       <h2 className="text-lg font-semibold text-white mb-4 px-2">
         Real-Time Hotspots
       </h2>

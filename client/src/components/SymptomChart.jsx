@@ -1,6 +1,4 @@
-// In client/src/components/SymptomChart.jsx
-
-import React from "react";
+import React, { useMemo } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -26,58 +24,66 @@ ChartJS.register(
 );
 
 const SymptomChart = ({ data }) => {
-  const chartData = {
-    labels: data.map((d) => d.label),
-    datasets: [
-      {
-        label: "Cholera Cases",
-        data: data.map((d) => d.value),
-        borderColor: "#00F2E5",
-        backgroundColor: "rgba(0, 242, 229, 0.15)",
-        pointBackgroundColor: "#00F2E5",
-        pointBorderColor: "#fff",
-        pointHoverRadius: 7,
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: "#00F2E5",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
-  };
+  const chartData = useMemo(() => {
+    return {
+      labels: data.map((d) => d.label),
+      datasets: [
+        {
+          label: "Cholera Cases",
+          data: data.map((d) => d.value),
+          borderColor: "#00F2E5",
+          backgroundColor: "rgba(0, 242, 229, 0.15)",
+          pointBackgroundColor: "#00F2E5",
+          pointBorderColor: "#fff",
+          pointHoverRadius: 7,
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "#00F2E5",
+          tension: 0.4,
+          fill: true,
+        },
+      ],
+    };
+  }, [data]);
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      x: {
-        grid: {
-          color: "rgba(255, 255, 255, 0.1)",
-        },
-        ticks: {
-          color: "#9CA3AF",
+  const options = useMemo(() => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
         },
       },
-      y: {
-        grid: {
-          color: "rgba(255, 255, 255, 0.1)",
+      scales: {
+        x: {
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)",
+          },
+          ticks: {
+            color: "#9CA3AF",
+          },
         },
-        ticks: {
-          color: "#9CA3AF",
+        y: {
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)",
+          },
+          ticks: {
+            color: "#9CA3AF",
+          },
         },
       },
-    },
-  };
+      animation: {
+        duration: 800,
+        easing: "easeOutBack",
+      },
+      resizeDelay: 200, // Add a small delay to resizing
+    };
+  }, []);
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-lg h-80">
+    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-lg h-[30rem] flex flex-col">
       <h2 className="text-lg font-semibold text-white mb-4">Symptom Trends</h2>
-      {/* Add `relative` here for better stability */}
-      <div className="relative h-full w-full">
+      <div className="relative flex-grow">
         <Line data={chartData} options={options} />
       </div>
     </div>

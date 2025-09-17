@@ -9,7 +9,7 @@ const Header = () => {
           Outbreak Analytics
         </h1>
         <p className="text-sm text-gray-400">
-          Bhubaneswar, Odisha | Wednesday, 12:25 PM
+          Bhubaneswar, Odisha | Wednesday, 2:09 PM
         </p>
       </div>
       <div className="flex items-center gap-4">
@@ -22,10 +22,6 @@ const Header = () => {
             alt="User Avatar"
             className="w-10 h-10 rounded-full border-2 border-cyan-400"
           />
-          <div>
-            <p className="font-semibold text-white">Dr. Anya Sharma</p>
-            <p className="text-xs text-gray-400">Epidemiologist</p>
-          </div>
         </div>
       </div>
     </header>
