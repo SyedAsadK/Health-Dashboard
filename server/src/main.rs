@@ -1,8 +1,19 @@
 use actix_cors::Cors; // Import Cors
 use actix_files as fs;
-use actix_web::{App, HttpResponse, HttpServer, Responder, get};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, post, web};
 use rand::Rng;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize)]
+struct PredictionRequest {
+    features: Vec<f64>, // Use f64 for floating-point numbers
+}
+
+#[derive(Deserialize, Serialize)]
+struct PythonPredictionResponse {
+    prediction: f64,
+    outbreak_risk: String,
+}
 
 #[derive(Serialize)]
 struct SymptomDataPoint {
@@ -121,21 +132,46 @@ async fn get_dashboard_data() -> impl Responder {
     HttpResponse::Ok().json(data)
 }
 
+#[post("/api/predict")] // New endpoint to call the Python service
+async fn predict_outbreak(req_body: web::Json<PredictionRequest>) -> impl Responder {
+    let client = reqwest::Client::new();
+    let python_api_url = "http://127.0.0.1:5001/predict";
+
+    // Forward the request to the Python microservice
+    let res = client
+        .post(python_api_url)
+        .json(&req_body.features)
+        .send()
+        .await;
+
+    match res {
+        Ok(response) => {
+            if response.status().is_success() {
+                let prediction_response: PythonPredictionResponse = response.json().await.unwrap();
+                HttpResponse::Ok().json(prediction_response)
+            } else {
+                HttpResponse::BadGateway().body("Failed to get prediction from Python service")
+            }
+        }
+        Err(_) => HttpResponse::InternalServerError().body("Failed to connect to Python service"),
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     println!("🚀 Server starting at http://127.0.0.1:8080");
 
     HttpServer::new(|| {
-        // Configure CORS
         let cors = Cors::default()
-            .allowed_origin("http://localhost:5173") // Your React dev server
-            .allowed_methods(vec!["GET", "POST"])
+            .allowed_origin("http://localhost:5173")
+            .allowed_methods(vec!["GET", "POST"]) // Allow POST method
             .allow_any_header()
             .max_age(3600);
 
         App::new()
-            .wrap(cors) // Add CORS middleware
+            .wrap(cors)
             .service(get_dashboard_data)
+            .service(predict_outbreak) // Register the new service
             .service(fs::Files::new("/", "../client/dist").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?

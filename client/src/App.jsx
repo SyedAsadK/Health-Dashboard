@@ -11,12 +11,15 @@ function App() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Add new state for the ML prediction
+  const [mlPrediction, setMlPrediction] = useState(null);
+  const [predictionLoading, setPredictionLoading] = useState(false);
+  const [predictionError, setPredictionError] = useState(null);
 
-  // This useEffect hook fetches data from the Actix backend when the component mounts.
   useEffect(() => {
+    // ... (fetchData function remains the same)
     const fetchData = async () => {
       try {
-        // Using the proxy setup in vite.config.js
         const response = await fetch("/api/dashboard-data");
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -27,7 +30,6 @@ function App() {
         setError(err.message);
         console.error("Failed to fetch data:", err);
       } finally {
-        // Simulate a network delay for a better UX
         setTimeout(() => {
           setLoading(false);
         });
@@ -37,7 +39,38 @@ function App() {
     fetchData();
   }, []);
 
-  // Main render logic
+  // New function to fetch ML prediction
+  const fetchPrediction = async () => {
+    setPredictionLoading(true);
+    setPredictionError(null);
+    try {
+      // You'll need to replace the placeholder features with actual data
+      // from your dashboard's state once you integrate it properly.
+      const sampleFeatures = {
+        features: [0.2, 0.8, 0.5, 0.9], // Placeholder data
+      };
+
+      const response = await fetch("/api/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(sampleFeatures),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      setMlPrediction(data.outbreak_risk);
+    } catch (err) {
+      setPredictionError(err.message);
+      console.error("Failed to fetch ML prediction:", err);
+    } finally {
+      setPredictionLoading(false);
+    }
+  };
+
   const renderContent = () => {
     if (loading) {
       return <LoadingSpinner />;
@@ -62,8 +95,25 @@ function App() {
                 change="High Priority"
                 isWarning={true}
               />
+              {/* New StatCard to display ML Prediction */}
+              <StatCard
+                title="ML Outbreak Risk"
+                value={mlPrediction || "Not predicted"}
+                change={
+                  predictionLoading
+                    ? "Predicting..."
+                    : predictionError || "Click 'Predict'"
+                }
+                isWarning={mlPrediction === "high"}
+              />
             </div>
             <SymptomChart data={dashboardData.symptom_data} />
+            <button
+              onClick={fetchPrediction}
+              className="p-4 bg-cyan-400 text-white rounded-lg"
+            >
+              Predict Outbreak Risk
+            </button>
           </div>
           {/* Right column */}
           <div className="lg:col-span-1 flex flex-col gap-6">
