@@ -30,7 +30,7 @@ function App() {
         // Simulate a network delay for a better UX
         setTimeout(() => {
           setLoading(false);
-        }, 2000);
+        });
       }
     };
 

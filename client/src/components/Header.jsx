@@ -1,7 +1,29 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Sun } from "lucide-react"; // Using lucide-react for icons
 
 const Header = () => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  useEffect(() => {
+    // Set up an interval to update the time every second
+    const timerId = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 1000);
+
+    // Clean up the interval when the component unmounts
+    return () => {
+      clearInterval(timerId);
+    };
+  }, []);
+
+  // Format the date and time
+  const formattedTime = currentDate.toLocaleString("en-US", {
+    weekday: "long",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+
   return (
     <header className="flex justify-between items-center">
       <div>
@@ -9,7 +31,7 @@ const Header = () => {
           Outbreak Analytics
         </h1>
         <p className="text-sm text-gray-400">
-          Bhubaneswar, Odisha | Wednesday, 2:34 PM
+          Bhubaneswar, Odisha | {formattedTime}
         </p>
       </div>
       <div className="flex items-center gap-4">
