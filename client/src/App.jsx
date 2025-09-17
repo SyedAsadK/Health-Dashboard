@@ -31,9 +31,8 @@ function App() {
       }
     };
 
-    // Simulate a network delay for a better loading experience
-    setTimeout(fetchData, 1500);
-  }, []); // The empty dependency array ensures this runs only once on mount.
+    fetchData();
+  }, []);
 
   // Main render logic
   const renderContent = () => {

@@ -1,3 +1,5 @@
+// In client/src/components/SymptomChart.jsx
+
 import React from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -74,7 +76,8 @@ const SymptomChart = ({ data }) => {
   return (
     <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-lg h-80">
       <h2 className="text-lg font-semibold text-white mb-4">Symptom Trends</h2>
-      <div className="h-full w-full">
+      {/* Add `relative` here for better stability */}
+      <div className="relative h-full w-full">
         <Line data={chartData} options={options} />
       </div>
     </div>

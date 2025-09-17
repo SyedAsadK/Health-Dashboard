@@ -17,6 +17,8 @@ struct MapHotspot {
     disease: String,
     risk: f64,
     cases: i32,
+    lat: f64,
+    lon: f64,
 }
 
 #[derive(Serialize)]
@@ -46,6 +48,8 @@ fn generate_map_data(num_hotspots: i32) -> Vec<MapHotspot> {
     ];
     let diseases = ["Cholera", "Typhoid", "Hepatitis A", "Diarrhea"];
     let mut rng = rand::thread_rng();
+    let bhubaneswar_lat = 20.2961;
+    let bhubaneswar_lon = 85.8245;
 
     for i in 0..num_hotspots {
         hotspots.push(MapHotspot {
@@ -54,6 +58,8 @@ fn generate_map_data(num_hotspots: i32) -> Vec<MapHotspot> {
             disease: diseases[rng.gen_range(0..diseases.len())].to_string(),
             risk: rng.r#gen(),
             cases: rng.gen_range(1..=50),
+            lat: bhubaneswar_lat + (rng.r#gen::<f64>() - 0.5) * 0.15,
+            lon: bhubaneswar_lon + (rng.r#gen::<f64>() - 0.5) * 0.15,
         });
     }
     hotspots

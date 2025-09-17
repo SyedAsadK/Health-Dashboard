@@ -24,10 +24,7 @@ const HotspotMap = ({ hotspots }) => {
         {hotspots.map((hotspot) => (
           <CircleMarker
             key={hotspot.id}
-            center={[
-              mapCenter[0] + (Math.random() - 0.5) * 0.15,
-              mapCenter[1] + (Math.random() - 0.5) * 0.15,
-            ]}
+            center={[hotspot.lat, hotspot.lon]} // Use lat and lon from the API
             radius={5 + hotspot.cases / 5}
             pathOptions={{
               color: getRiskColor(hotspot.risk),
