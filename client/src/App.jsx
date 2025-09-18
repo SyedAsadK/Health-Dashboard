@@ -28,9 +28,10 @@ function App() {
         setError(err.message);
         console.error("Failed to fetch data:", err);
       } finally {
+        // A small delay for a smoother loading experience
         setTimeout(() => {
           setLoading(false);
-        }, 500); // Added a small delay for better UX
+        }, 500);
       }
     };
 
@@ -41,8 +42,8 @@ function App() {
     setPredictionLoading(true);
     setPredictionError(null);
     try {
-      // IMPORTANT: Replace this with actual data from your application.
-      // This should be a dictionary with all 88 feature names and their values.
+      // The features are now sent as a dictionary object with the required fields.
+      // This placeholder data uses typical values that might indicate a higher risk.
       const featuresForPrediction = {
         features: {
           fcol_mpn: 500,
@@ -50,8 +51,10 @@ function App() {
           bod3_27: 3.5,
           ph_gen: 7.2,
           _do: 5.0,
-          // Add all other 83 features here with their values.
-          // For features not available, you can send 0 or a typical value.
+          Latitude: 20.2961, // Example Bhubaneswar Latitude
+          Longitude: 85.8245, // Example Bhubaneswar Longitude
+          // In a real application, you would populate this with more dynamic data.
+          // The .fillna(0) in the Python API will handle any features you don't send.
         },
       };
 
@@ -64,7 +67,10 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! Status: ${response.status} - ${errorText}`,
+        );
       }
       const data = await response.json();
       setMlPrediction(data.outbreak_risk);
@@ -104,9 +110,7 @@ function App() {
                 title="ML Outbreak Risk"
                 value={mlPrediction ? mlPrediction.toUpperCase() : "N/A"}
                 change={
-                  predictionLoading
-                    ? "Predicting..."
-                    : predictionError || "Click to Predict"
+                  predictionLoading ? "Predicting..." : predictionError || ""
                 }
                 isWarning={mlPrediction === "high"}
               />
@@ -115,7 +119,7 @@ function App() {
             <button
               onClick={fetchPrediction}
               disabled={predictionLoading}
-              className="p-4 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 disabled:bg-gray-500"
+              className="p-4 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
             >
               {predictionLoading
                 ? "Analyzing Data..."
@@ -134,7 +138,7 @@ function App() {
   };
 
   return (
-    <div className="flex h-full bg-[#0D1B2A] text-white">
+    <div className="flex h-screen bg-[#0D1B2A] text-white font-sans">
       <Sidebar />
       <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <Header />

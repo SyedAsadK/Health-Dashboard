@@ -1,24 +1,31 @@
+import base64
+from io import BytesIO
+
 import joblib
+
+# Set matplotlib to a non-interactive backend
+import matplotlib
+import matplotlib.pyplot as plt
 import pandas as pd
-import xgboost as xgb  # Import the xgboost library
+import seaborn as sns
+import xgboost as xgb
 from flask import Flask, jsonify, request
+
+matplotlib.use("Agg")
 
 app = Flask(__name__)
 
-# This is the new way to load your model from the JSON file
 try:
-    # Instantiate a new XGBClassifier object first
     model = xgb.XGBClassifier()
-    # Load the model from the JSON file
     model.load_model("sihmodel.json")
     print("ML model (sihmodel.json) loaded successfully.")
 except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
-# The rest of your app.py file remains the same...
-
 features_list = [
+    "Latitude",
+    "Longitude",
     "_24d",
     "_as",
     "_do",
@@ -41,7 +48,6 @@ features_list = [
     "cod",
     "cr",
     "cu",
-    "data_gov_update_date",
     "ddt",
     "dieldrin",
     "do_sat_",
@@ -109,23 +115,72 @@ features_list = [
 ]
 
 
+def create_feature_importance_plot(model, feature_names):
+    """Generates and returns a feature importance plot as a Base64 string."""
+    fig, ax = plt.subplots(figsize=(10, 8))
+    importances = model.feature_importances_
+    indices = importances.argsort()[-10:]  # Top 10 features
+    ax.barh(range(len(indices)), importances[indices], align="center")
+    ax.set_yticks(range(len(indices)))
+    ax.set_yticklabels([feature_names[i] for i in indices])
+    ax.set_xlabel("Importance")
+    ax.set_title("Top 10 Feature Importance")
+    plt.tight_layout()
+
+    buf = BytesIO()
+    fig.savefig(buf, format="png", dpi=80)
+    plt.close(fig)
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+
+def create_confusion_matrix_plot():
+    """Generates and returns a sample confusion matrix plot as a Base64 string."""
+    # Using sample data as we don't have a live test set here
+    cm_data = [[700, 58], [15, 70]]
+    fig, ax = plt.subplots(figsize=(6, 5))
+    sns.heatmap(
+        cm_data,
+        annot=True,
+        fmt="d",
+        cmap="Blues",
+        xticklabels=["Safe", "Outbreak"],
+        yticklabels=["Safe", "Outbreak"],
+        ax=ax,
+    )
+    ax.set_title("Sample Confusion Matrix")
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
+    plt.tight_layout()
+
+    buf = BytesIO()
+    fig.savefig(buf, format="png", dpi=80)
+    plt.close(fig)
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
     if model is None:
         return jsonify({"error": "Model not loaded"}), 500
 
     data = request.get_json(force=True)
-
-    # This part remains the same
-    input_df = pd.DataFrame([data["features"]]).reindex(columns=features_list).fillna(0)
+    input_df = pd.DataFrame([data["features"]]).reindex(
+        columns=features_list).fillna(0)
 
     prediction_prob = model.predict_proba(input_df)[:, 1]
-    risk_probability = prediction_prob[0]
+    risk_probability = float(prediction_prob[0])
+
+    # Generate plots
+    feature_importance_img = create_feature_importance_plot(
+        model, features_list)
+    confusion_matrix_img = create_confusion_matrix_plot()
 
     return jsonify(
         {
             "prediction": risk_probability,
             "outbreak_risk": "high" if risk_probability > 0.3 else "low",
+            "feature_importance_plot": feature_importance_img,
+            "confusion_matrix_plot": confusion_matrix_img,
         }
     )
 
