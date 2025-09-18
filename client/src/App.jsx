@@ -11,13 +11,11 @@ function App() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // Add new state for the ML prediction
   const [mlPrediction, setMlPrediction] = useState(null);
   const [predictionLoading, setPredictionLoading] = useState(false);
   const [predictionError, setPredictionError] = useState(null);
 
   useEffect(() => {
-    // ... (fetchData function remains the same)
     const fetchData = async () => {
       try {
         const response = await fetch("/api/dashboard-data");
@@ -32,22 +30,29 @@ function App() {
       } finally {
         setTimeout(() => {
           setLoading(false);
-        });
+        }, 500); // Added a small delay for better UX
       }
     };
 
     fetchData();
   }, []);
 
-  // New function to fetch ML prediction
   const fetchPrediction = async () => {
     setPredictionLoading(true);
     setPredictionError(null);
     try {
-      // You'll need to replace the placeholder features with actual data
-      // from your dashboard's state once you integrate it properly.
-      const sampleFeatures = {
-        features: [0.2, 0.8, 0.5, 0.9], // Placeholder data
+      // IMPORTANT: Replace this with actual data from your application.
+      // This should be a dictionary with all 88 feature names and their values.
+      const featuresForPrediction = {
+        features: {
+          fcol_mpn: 500,
+          tcol_mpn: 600,
+          bod3_27: 3.5,
+          ph_gen: 7.2,
+          _do: 5.0,
+          // Add all other 83 features here with their values.
+          // For features not available, you can send 0 or a typical value.
+        },
       };
 
       const response = await fetch("/api/predict", {
@@ -55,7 +60,7 @@ function App() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(sampleFeatures),
+        body: JSON.stringify(featuresForPrediction),
       });
 
       if (!response.ok) {
@@ -83,7 +88,7 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           {/* Main column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <StatCard
                 title="Total Cases"
                 value={dashboardData.total_cases}
@@ -95,14 +100,13 @@ function App() {
                 change="High Priority"
                 isWarning={true}
               />
-              {/* New StatCard to display ML Prediction */}
               <StatCard
                 title="ML Outbreak Risk"
-                value={mlPrediction || "Not predicted"}
+                value={mlPrediction ? mlPrediction.toUpperCase() : "N/A"}
                 change={
                   predictionLoading
                     ? "Predicting..."
-                    : predictionError || "Click 'Predict'"
+                    : predictionError || "Click to Predict"
                 }
                 isWarning={mlPrediction === "high"}
               />
@@ -110,9 +114,12 @@ function App() {
             <SymptomChart data={dashboardData.symptom_data} />
             <button
               onClick={fetchPrediction}
-              className="p-4 bg-cyan-400 text-white rounded-lg"
+              disabled={predictionLoading}
+              className="p-4 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 disabled:bg-gray-500"
             >
-              Predict Outbreak Risk
+              {predictionLoading
+                ? "Analyzing Data..."
+                : "Predict Outbreak Risk"}
             </button>
           </div>
           {/* Right column */}

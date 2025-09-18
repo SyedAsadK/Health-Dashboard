@@ -1,12 +1,13 @@
-use actix_cors::Cors; // Import Cors
+use actix_cors::Cors;
 use actix_files as fs;
-use actix_web::{App, HttpResponse, HttpServer, Responder, get, post, web};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap; 
 
-#[derive(Deserialize)]
+#[derive(Deserialize,Serialize)]
 struct PredictionRequest {
-    features: Vec<f64>, // Use f64 for floating-point numbers
+    features: HashMap<String, f64>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -47,7 +48,6 @@ struct DashboardData {
     map_hotspots: Vec<MapHotspot>,
     alerts: Vec<Alert>,
 }
-
 fn generate_map_data(num_hotspots: i32) -> Vec<MapHotspot> {
     let mut hotspots = Vec::new();
     let locations = [
@@ -131,26 +131,28 @@ async fn get_dashboard_data() -> impl Responder {
 
     HttpResponse::Ok().json(data)
 }
-
-#[post("/api/predict")] // New endpoint to call the Python service
+#[post("/api/predict")]
 async fn predict_outbreak(req_body: web::Json<PredictionRequest>) -> impl Responder {
     let client = reqwest::Client::new();
     let python_api_url = "http://127.0.0.1:5001/predict";
 
-    // Forward the request to the Python microservice
+    // Forward the JSON body directly to the Python microservice
     let res = client
         .post(python_api_url)
-        .json(&req_body.features)
+        .json(&req_body.into_inner()) // Send the whole PredictionRequest struct
         .send()
         .await;
 
     match res {
         Ok(response) => {
             if response.status().is_success() {
-                let prediction_response: PythonPredictionResponse = response.json().await.unwrap();
-                HttpResponse::Ok().json(prediction_response)
+                match response.json::<PythonPredictionResponse>().await {
+                    Ok(prediction_response) => HttpResponse::Ok().json(prediction_response),
+                    Err(_) => HttpResponse::InternalServerError().body("Failed to parse prediction response"),
+                }
             } else {
-                HttpResponse::BadGateway().body("Failed to get prediction from Python service")
+                let error_body = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+                HttpResponse::BadGateway().body(format!("Python service error: {}", error_body))
             }
         }
         Err(_) => HttpResponse::InternalServerError().body("Failed to connect to Python service"),
@@ -164,14 +166,14 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         let cors = Cors::default()
             .allowed_origin("http://localhost:5173")
-            .allowed_methods(vec!["GET", "POST"]) // Allow POST method
+            .allowed_methods(vec!["GET", "POST"])
             .allow_any_header()
             .max_age(3600);
 
         App::new()
             .wrap(cors)
             .service(get_dashboard_data)
-            .service(predict_outbreak) // Register the new service
+            .service(predict_outbreak)
             .service(fs::Files::new("/", "../client/dist").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?
