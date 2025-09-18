@@ -14,11 +14,15 @@ function App() {
   const [mlPrediction, setMlPrediction] = useState(null);
   const [predictionLoading, setPredictionLoading] = useState(false);
   const [predictionError, setPredictionError] = useState(null);
+  // State for the new Seaborn plot
+  const [seabornPlot, setSeabornPlot] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/dashboard-data");
+        const response = await fetch(
+          "http://127.0.0.1:8080/api/dashboard-data",
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -58,7 +62,7 @@ function App() {
         },
       };
 
-      const response = await fetch("/api/predict", {
+      const response = await fetch("http://127.0.0.1:8080/api/predict", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,6 +78,8 @@ function App() {
       }
       const data = await response.json();
       setMlPrediction(data.outbreak_risk);
+      // Set the state for the new plot
+      setSeabornPlot(data.seaborn_plot);
     } catch (err) {
       setPredictionError(err.message);
       console.error("Failed to fetch ML prediction:", err);
@@ -116,6 +122,19 @@ function App() {
               />
             </div>
             <SymptomChart data={dashboardData.symptom_data} />
+            {/* Conditionally render the Seaborn plot after it has been fetched */}
+            {seabornPlot && (
+              <div className="bg-[#1B263B] p-4 rounded-lg shadow-lg">
+                <h3 className="text-lg font-semibold mb-4 text-gray-200">
+                  Feature Importance (Seaborn)
+                </h3>
+                <img
+                  src={`data:image/png;base64,${seabornPlot}`}
+                  alt="Seaborn Feature Importance Plot"
+                  className="w-full h-auto rounded-md"
+                />
+              </div>
+            )}
             <button
               onClick={fetchPrediction}
               disabled={predictionLoading}

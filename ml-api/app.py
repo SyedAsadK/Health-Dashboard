@@ -158,6 +158,42 @@ def create_confusion_matrix_plot():
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 
+def create_seaborn_feature_plot(model, feature_names):
+    """Generates a Seaborn feature importance plot and returns it as a Base64 string."""
+    try:
+        # Set a Seaborn style
+        sns.set_theme(style="whitegrid", palette="viridis")
+
+        importances = model.feature_importances_
+        # Create a DataFrame for easier plotting with Seaborn
+        feature_df = (
+            pd.DataFrame({"features": feature_names,
+                         "importance": importances})
+            .sort_values(by="importance", ascending=False)
+            .head(10)
+        )  # Top 10
+
+        # Create the plot
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x="importance", y="features", data=feature_df, ax=ax)
+
+        ax.set_title("Top 10 Feature Importance (Seaborn)")
+        ax.set_xlabel("Importance Score")
+        ax.set_ylabel("Features")
+        plt.tight_layout()
+
+        # Save plot to a memory buffer
+        buf = BytesIO()
+        fig.savefig(buf, format="png", dpi=90)
+        plt.close(fig)  # Close the figure to free memory
+
+        # Encode and return the image
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
+    except Exception as e:
+        print(f"Error creating Seaborn plot: {e}")
+        return None
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
     if model is None:
@@ -174,6 +210,7 @@ def predict():
     feature_importance_img = create_feature_importance_plot(
         model, features_list)
     confusion_matrix_img = create_confusion_matrix_plot()
+    seaborn_plot_img = create_seaborn_feature_plot(model, features_list)
 
     return jsonify(
         {
@@ -181,6 +218,7 @@ def predict():
             "outbreak_risk": "high" if risk_probability > 0.3 else "low",
             "feature_importance_plot": feature_importance_img,
             "confusion_matrix_plot": confusion_matrix_img,
+            "seaborn_plot": seaborn_plot_img,
         }
     )
 

@@ -3,9 +3,9 @@ use actix_files as fs;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap; 
+use std::collections::HashMap;
 
-#[derive(Deserialize,Serialize)]
+#[derive(Deserialize, Serialize)]
 struct PredictionRequest {
     features: HashMap<String, f64>,
 }
@@ -14,6 +14,8 @@ struct PredictionRequest {
 struct PythonPredictionResponse {
     prediction: f64,
     outbreak_risk: String,
+    // Add the new field to deserialize the response from Python
+    seaborn_plot: Option<String>,
 }
 
 #[derive(Serialize)]
